@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+
+# Environment variables (VERY IMPORTANT)
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Runtime files
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage reports (testing)
+coverage/
+
+# Cache
+.cache/
+.eslintcache
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# Build output (if using TypeScript or bundlers)
+dist/
+build/
+
+# Temporary files
+tmp/
+temp/
+
+# Optional: ignore uploads folder if exists
+uploads/
+
+# Optional: ignore database dumps
+*.sql
+*.sqlite
+*.db
