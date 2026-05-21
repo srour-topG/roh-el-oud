@@ -9,10 +9,12 @@ import {
   MdQrCode,
   MdWarning,
   MdRemove,
+  MdCompareArrows,
 } from "react-icons/md";
 import { IoClose, IoSearch } from "react-icons/io5";
 import { FaBoxOpen, FaCamera } from "react-icons/fa6";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
+import { FaStore } from "react-icons/fa";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const STATIC =
@@ -25,7 +27,7 @@ const IS = (err) => ({
   padding: "0 0.875rem",
   border: `1px solid ${err ? "#ef4444" : "#e5e7eb"}`,
   borderRadius: "10px",
-  fontSize: "14px",
+  fontSize: "16px",
   background: "#f9fafb",
   color: "#374151",
   outline: "none",
@@ -169,7 +171,6 @@ function ProductModal({ mode, product, onClose, onSuccess }) {
   const buyPrice = Number(form.buyPrice) || 0;
   const margin = sellPrice - buyPrice;
 
-
   const currentImage = isEdit ? product.image : null;
   const previewSrc =
     preview ||
@@ -271,7 +272,7 @@ function ProductModal({ mode, product, onClose, onSuccess }) {
               <label
                 style={{
                   display: "block",
-                  fontSize: "12px",
+                  fontSize: "16px",
                   fontWeight: "600",
                   color: "#374151",
                   marginBottom: "5px",
@@ -321,7 +322,7 @@ function ProductModal({ mode, product, onClose, onSuccess }) {
                 <label
                   style={{
                     display: "block",
-                    fontSize: "12px",
+                    fontSize: "16px",
                     fontWeight: "600",
                     color: "#374151",
                     marginBottom: "5px",
@@ -359,7 +360,7 @@ function ProductModal({ mode, product, onClose, onSuccess }) {
               <label
                 style={{
                   display: "block",
-                  fontSize: "12px",
+                  fontSize: "16px",
                   fontWeight: "600",
                   color: "#374151",
                   marginBottom: "5px",
@@ -404,7 +405,7 @@ function ProductModal({ mode, product, onClose, onSuccess }) {
               <label
                 style={{
                   display: "block",
-                  fontSize: "12px",
+                  fontSize: "16px",
                   fontWeight: "600",
                   color: "#374151",
                   marginBottom: "5px",
@@ -466,7 +467,7 @@ function ProductModal({ mode, product, onClose, onSuccess }) {
               <label
                 style={{
                   display: "block",
-                  fontSize: "12px",
+                  fontSize: "16px",
                   fontWeight: "600",
                   color: "#374151",
                   marginBottom: "8px",
@@ -485,7 +486,7 @@ function ProductModal({ mode, product, onClose, onSuccess }) {
                   style={{
                     width: "80px",
                     height: "80px",
-                    borderRadius: "12px",
+                    borderRadius: "16px",
                     border: "2px dashed #d1d5db",
                     display: "flex",
                     alignItems: "center",
@@ -699,7 +700,7 @@ function StockModal({ product, type, onClose, onSuccess }) {
           style={{
             width: "48px",
             height: "48px",
-            borderRadius: "12px",
+            borderRadius: "16px",
             background: isAdd ? "#f0fdf4" : "#fef2f2",
             display: "flex",
             alignItems: "center",
@@ -835,6 +836,273 @@ function StockModal({ product, type, onClose, onSuccess }) {
               border: "none",
               borderRadius: "10px",
               fontSize: "14px",
+              fontWeight: "600",
+              cursor: "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StoreTransferModal({ product, onClose, onSuccess }) {
+  const [qty, setQty] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [type, setType] = useState("toStore");
+
+  const handleSubmit = async () => {
+    const quantityNum = parseInt(qty);
+    if (!quantityNum || quantityNum <= 0) return;
+
+    if (type === "toStore" && quantityNum > product.quantity) {
+      onSuccess("الكمية أكبر من المخزن", false);
+      return;
+    }
+    if (type === "toWarehouse" && quantityNum > (product.storeQuantity || 0)) {
+      onSuccess("الكمية أكبر من المحل", false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post(`${apiUrl}/products/store-transfer`, {
+        productID: product.id,
+        quantity: quantityNum,
+        type,
+      });
+      onSuccess(
+        type === "toStore" ? "تم النقل إلى المحل" : "تم الإرجاع إلى المخزن",
+        true,
+      );
+    } catch (error) {
+      onSuccess(error.response?.data?.Message || "حدث خطأ", false);
+      onClose();
+    } finally {
+      setLoading(false);
+      onClose();
+    }
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.4)",
+        backdropFilter: "blur(4px)",
+        zIndex: 1200,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "1rem",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        dir="rtl"
+        style={{
+          background: "#fff",
+          borderRadius: "20px",
+          padding: "1.75rem",
+          width: "min(400px, 92vw)",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.12)",
+          position: "relative",
+        }}
+      >
+        {/* Close button (same as ProductModal) */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: "1rem",
+            left: "1rem",
+            width: "30px",
+            height: "30px",
+            borderRadius: "50%",
+            border: "none",
+            background: "#f3f4f6",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#6b7280",
+          }}
+        >
+          ✕
+        </button>
+
+        {/* Header with icon (like ProductModal) */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            marginBottom: "1.5rem",
+          }}
+        >
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "10px",
+              background: "#eaeefc",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <MdCompareArrows size={20} color="#1e3a8a" />
+          </div>
+          <h3
+            style={{
+              margin: 0,
+              fontSize: "17px",
+              fontWeight: "700",
+              color: "#1e3a8a",
+            }}
+          >
+            نقل بين المخزن والمحل
+          </h3>
+        </div>
+
+        {/* Stock info panel (matches ProductModal profit preview styling) */}
+        <div
+          style={{
+            background: "#f0fdf4",
+            border: "1px solid #bbf7d0",
+            borderRadius: "10px",
+            padding: "0.75rem 1rem",
+            marginBottom: "1.25rem",
+            display: "flex",
+            justifyContent: "space-between",
+            fontSize: "13px",
+          }}
+          className="text-xl font-bold"
+        >
+          <span style={{ color: "#15803d" }}>المخزن</span>
+          <span style={{ fontWeight: "700", color: "#15803d" }}>
+            {product.quantity}
+          </span>
+          <span style={{ color: "#15803d" }}>المحل</span>
+          <span style={{ fontWeight: "700", color: "#15803d" }}>
+            {product.storeQuantity || 0}
+          </span>
+        </div>
+
+        {/* Movement type selector – styled like ProductModal select */}
+        <div style={{ marginBottom: "1rem" }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: "18px",
+              fontWeight: "600",
+              color: "#374151",
+              marginBottom: "6px",
+            }}
+          >
+            نوع الحركة
+          </label>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="text-gray-600"
+            style={{
+              width: "100%",
+              height: "44px",
+              padding: "0 0.875rem",
+              border: "2px solid #e5e7eb",
+              borderRadius: "10px",
+              fontSize: "16px",
+              fontWeight: "600",
+              fontFamily: "inherit",
+              background: "#fff",
+              cursor: "pointer",
+              outline: "none",
+              transition: "border-color 0.15s",
+            }}
+            onFocus={(e) => (e.target.style.borderColor = "#1e3a8a")}
+            onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+          >
+            <option value="toStore">نقل إلى المحل</option>
+            <option value="toWarehouse">إرجاع إلى المخزن</option>
+          </select>
+        </div>
+
+        {/* Quantity input */}
+        <div style={{ marginBottom: "1.5rem" }}>
+          <label
+            style={{
+              display: "block",
+              fontSize: "18px",
+              fontWeight: "600",
+              color: "#374151",
+              marginBottom: "6px",
+            }}
+          >
+            الكمية
+          </label>
+          <input
+            type="number"
+            min="1"
+            value={qty}
+            onChange={(e) => setQty(e.target.value)}
+            className="text-gray-600"
+            style={{
+              width: "100%",
+              height: "44px",
+              padding: "0 0.875rem",
+              border: "2px solid #e5e7eb",
+              borderRadius: "10px",
+              fontSize: "20px",
+              fontFamily: "inherit",
+              outline: "none",
+              transition: "border-color 0.15s",
+            }}
+            onFocus={(e) => (e.target.style.borderColor = "#1e3a8a")}
+            onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+          />
+        </div>
+
+        {/* Buttons grid – same as ProductModal */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "0.75rem",
+          }}
+        >
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            style={{
+              height: "46px",
+              background: "#1e3a8a",
+              color: "#fff",
+              border: "none",
+              borderRadius: "10px",
+              fontSize: "15px",
+              fontWeight: "700",
+              cursor: loading ? "not-allowed" : "pointer",
+              fontFamily: "inherit",
+              opacity: loading ? 0.7 : 1,
+            }}
+          >
+            {loading ? "جاري..." : "تأكيد"}
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              height: "46px",
+              background: "#f3f4f6",
+              color: "#374151",
+              border: "none",
+              borderRadius: "10px",
+              fontSize: "15px",
               fontWeight: "600",
               cursor: "pointer",
               fontFamily: "inherit",
@@ -992,8 +1260,8 @@ const TH = ({ children, center }) => (
     style={{
       textAlign: center ? "center" : "right",
       padding: "13px 16px",
-      fontSize: "12px",
-      fontWeight: "600",
+      fontSize: "16px",
+      fontWeight: "700",
       color: "#4b5563",
       background: "#f1f3f9",
       borderBottom: "1px solid #e5e7eb",
@@ -1023,6 +1291,7 @@ export default function Products() {
   const [totalItems, setTotalItems] = useState(0);
   const [modal, setModal] = useState(null);
   const [stockModal, setStockModal] = useState(null);
+  const [storeModal, setStoreModal] = useState(null);
   const [toast, setToast] = useState(null);
   const debounceRef = useRef(null);
   const LIMIT = 10;
@@ -1159,6 +1428,13 @@ export default function Products() {
           onSuccess={notify}
         />
       )}
+      {storeModal && (
+        <StoreTransferModal
+          product={storeModal.product}
+          onClose={() => setStoreModal(null)}
+          onSuccess={notify}
+        />
+      )}
 
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         {/* Header */}
@@ -1183,7 +1459,7 @@ export default function Products() {
             >
               المنتجات
             </h1>
-            <p style={{ margin: 0, fontSize: "14px", color: "#6b7280" }}>
+            <p style={{ margin: 0, fontSize: "18px", color: "#6b7280" }}>
               إدارة المخزون والأسعار
             </p>
           </div>
@@ -1214,7 +1490,7 @@ export default function Products() {
                 color: "#fff",
                 border: "none",
                 borderRadius: "10px",
-                fontSize: "14px",
+                fontSize: "18px",
                 fontWeight: "700",
                 cursor: "pointer",
                 fontFamily: "inherit",
@@ -1275,7 +1551,7 @@ export default function Products() {
               <div>
                 <div
                   style={{
-                    fontSize: "11px",
+                    fontSize: "18px",
                     color: "#9ca3af",
                     marginBottom: "3px",
                   }}
@@ -1339,7 +1615,7 @@ export default function Products() {
               padding: "0 0.75rem",
               border: "1px solid #e5e7eb",
               borderRadius: "8px",
-              fontSize: "13px",
+              fontSize: "15px",
               background: "#f9fafb",
               color: "#374151",
               outline: "none",
@@ -1367,7 +1643,7 @@ export default function Products() {
                   height: "34px",
                   padding: "0 0.875rem",
                   borderRadius: "8px",
-                  fontSize: "12px",
+                  fontSize: "14px",
                   fontWeight: "600",
                   border: "1px solid",
                   cursor: "pointer",
@@ -1407,6 +1683,7 @@ export default function Products() {
                   <TH center>سعر الشراء</TH>
                   <TH center>الربح</TH>
                   <TH center>المخزون</TH>
+                  <TH center>المحل</TH>
                   <TH>الحالة</TH>
                   <TH center>إجراءات</TH>
                 </tr>
@@ -1497,7 +1774,7 @@ export default function Products() {
                               <div
                                 style={{
                                   fontWeight: "600",
-                                  fontSize: "13px",
+                                  fontSize: "18px",
                                   color: "#1a1f36",
                                 }}
                               >
@@ -1506,7 +1783,7 @@ export default function Products() {
                               {p.barcode && (
                                 <div
                                   style={{
-                                    fontSize: "10px",
+                                    fontSize: "12px",
                                     color: "#9ca3af",
                                     display: "flex",
                                     alignItems: "center",
@@ -1525,7 +1802,7 @@ export default function Products() {
                           {p.category ? (
                             <span
                               style={{
-                                fontSize: "11px",
+                                fontSize: "15px",
                                 fontWeight: "600",
                                 padding: "2px 8px",
                                 borderRadius: "6px",
@@ -1537,7 +1814,12 @@ export default function Products() {
                             </span>
                           ) : (
                             <span
-                              style={{ color: "#d1d5db", fontSize: "12px" }}
+                              style={{
+                                color: "#d1d5db",
+                                fontSize: "15px",
+                                fontWeight: "600",
+                                padding: "2px 10px",
+                              }}
                             >
                               —
                             </span>
@@ -1548,7 +1830,7 @@ export default function Products() {
                           style={{
                             padding: "12px 16px",
                             textAlign: "center",
-                            fontSize: "13px",
+                            fontSize: "18px",
                             fontWeight: "700",
                             color: "#16a34a",
                           }}
@@ -1559,7 +1841,7 @@ export default function Products() {
                           style={{
                             padding: "12px 16px",
                             textAlign: "center",
-                            fontSize: "13px",
+                            fontSize: "18px",
                             color: "#6b7280",
                           }}
                         >
@@ -1569,7 +1851,7 @@ export default function Products() {
                           style={{
                             padding: "12px 16px",
                             textAlign: "center",
-                            fontSize: "13px",
+                            fontSize: "18px",
                             fontWeight: "700",
                             color: profit > 0 ? "#10b981" : "#ef4444",
                           }}
@@ -1594,8 +1876,8 @@ export default function Products() {
                                 setStockModal({ product: p, type: "remove" })
                               }
                               style={{
-                                width: "24px",
-                                height: "24px",
+                                width: "28px",
+                                height: "28px",
                                 borderRadius: "6px",
                                 border: "none",
                                 background: "#fee2e2",
@@ -1604,7 +1886,7 @@ export default function Products() {
                                 alignItems: "center",
                                 justifyContent: "center",
                                 color: "#dc2626",
-                                fontSize: "14px",
+                                fontSize: "18px",
                                 fontWeight: "700",
                               }}
                             >
@@ -1612,7 +1894,7 @@ export default function Products() {
                             </button>
                             <span
                               style={{
-                                fontSize: "16px",
+                                fontSize: "20px",
                                 fontWeight: "800",
                                 color:
                                   p.quantity <= p.minQuantity
@@ -1629,8 +1911,8 @@ export default function Products() {
                                 setStockModal({ product: p, type: "add" })
                               }
                               style={{
-                                width: "24px",
-                                height: "24px",
+                                width: "28px",
+                                height: "28px",
                                 borderRadius: "6px",
                                 border: "none",
                                 background: "#dcfce7",
@@ -1639,7 +1921,7 @@ export default function Products() {
                                 alignItems: "center",
                                 justifyContent: "center",
                                 color: "#16a34a",
-                                fontSize: "14px",
+                                fontSize: "20px",
                                 fontWeight: "700",
                               }}
                             >
@@ -1647,7 +1929,16 @@ export default function Products() {
                             </button>
                           </div>
                         </td>
-
+                        <td
+                          style={{
+                            padding: "12px 16px",
+                            textAlign: "center",
+                            fontWeight: "700",
+                            color: "#0891b2",
+                          }}
+                        >
+                          {p.storeQuantity || 0}
+                        </td>
                         {/* emptyQuantity column */}
                         {/* <td style={{ textAlign: "center", fontSize: "13px" }}>
                           {p.emptyQuantity || 0}
@@ -1656,7 +1947,7 @@ export default function Products() {
                         <td style={{ padding: "12px 16px" }}>
                           <span
                             style={{
-                              fontSize: "11px",
+                              fontSize: "15px",
                               fontWeight: "700",
                               padding: "3px 10px",
                               borderRadius: "20px",
@@ -1692,7 +1983,19 @@ export default function Products() {
                           >
                             {[
                               {
-                                icon: <MdModeEdit size={15} />,
+                                icon: <FaStore size={20} />,
+                                action: () =>
+                                  setStoreModal({
+                                    product: p,
+                                  }),
+                                hover: {
+                                  bg: "#ecfeff",
+                                  border: "#a5f3fc",
+                                  color: "#0891b2",
+                                },
+                              },
+                              {
+                                icon: <MdModeEdit size={20} />,
                                 action: () =>
                                   setModal({ type: "edit", product: p }),
                                 hover: {
@@ -1702,7 +2005,7 @@ export default function Products() {
                                 },
                               },
                               {
-                                icon: <MdDelete size={15} />,
+                                icon: <MdDelete size={20} />,
                                 action: () =>
                                   setModal({ type: "delete", product: p }),
                                 hover: {
@@ -1765,7 +2068,7 @@ export default function Products() {
                 borderTop: "1px solid #f0f2f8",
               }}
             >
-              <span style={{ fontSize: "13px", color: "#6b7280" }}>
+              <span style={{ fontSize: "15px", color: "#6b7280" }}>
                 عرض {(page - 1) * LIMIT + 1}–
                 {Math.min(page * LIMIT, totalItems)} من {totalItems}
               </span>
@@ -1802,7 +2105,7 @@ export default function Products() {
                         width: "34px",
                         height: "34px",
                         borderRadius: "8px",
-                        fontSize: "13px",
+                        fontSize: "15px",
                         fontWeight: "600",
                         border: page === pg ? "none" : "1px solid #e5e7eb",
                         background: page === pg ? "#1e3a8a" : "#fff",

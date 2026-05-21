@@ -2,11 +2,12 @@
 :: Set variables
 set DB_NAME=roh_system
 set DB_USER=root
-set DB_PASS=cardio@123
-set BACKUP_DIR=E:\cardio\backup
+set DB_PASS=roh@123
+set BACKUP_DIR=E:\A CV\roh system\backup
 set DATESTAMP=%DATE:~10,4%-%DATE:~4,2%-%DATE:~7,2%_%TIME:~0,2%-%TIME:~3,2%
 
 :: Ensure backup directory xists
+if not exist "%BACKUP_DIR%" mkdir "%BACKUP_DIR%"
 
 
 :: Dump the database

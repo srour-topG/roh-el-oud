@@ -1,6 +1,7 @@
 const { Op } = require("sequelize");
 const { sequelize } = require("../../config/databaseConnection");
 const Indebtedness = require("../../models/indebtedness.model");
+const { FinancialTransaction } = require("../../models");
 const { DateNow } = require("../../utils/date");
 
 /* ─────────────────────────────────────────────
@@ -97,7 +98,6 @@ exports.getAllDebts = async (req, res) => {
   }
 };
 
-
 /* ─────────────────────────────────────────────
    pay debt -- > no need to delete
 ───────────────────────────────────────────── */
@@ -153,6 +153,24 @@ exports.payDebt = async (req, res) => {
       { transaction: t },
     );
 
+    await FinancialTransaction.create(
+      {
+        type: "DEBT_PAYMENT",
+
+        invoiceNumber: debt.invoiceNumber,
+
+        amount: actualPay,
+
+        sourceType: "DEBT",
+
+        sourceId: debt.id,
+
+        notes: `سداد دين فاتورة ${debt.invoiceNumber}`,
+
+        date: DateNow(),
+      },
+      { transaction: t },
+    );
 
     const Sales = require("../../models/sale.model");
 
@@ -213,7 +231,6 @@ exports.deleteDebt = async (req, res) => {
     res.status(500).json({ statusCode: "500", Message: "حدث خطأ ما" });
   }
 };
-
 
 exports.createDebt = async (req, res) => {
   try {

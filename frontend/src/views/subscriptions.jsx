@@ -132,7 +132,7 @@ function Subscriptions() {
         endDate: endDate ? format(endDate, "yyyy-MM-dd") : undefined,
       };
       const res = await axios.get(`${apiUrl}/subscriptions`, { params });
-      console.log("ressss : ", res.data);
+      // console.log("ressss : ", res.data);
       setSubscriptions(res.data.subscriptions);
       setCurrentPage(res.data.currentPage);
       setTotalPages(res.data.totalPages);

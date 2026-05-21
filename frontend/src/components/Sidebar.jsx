@@ -87,7 +87,7 @@ export function Sidebar() {
               key={item.href}
               to={item.href}
               className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
+                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-lg font-medium transition-all ${
                   isActive
                     ? "bg-cyan-600 text-white shadow-sm"
                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
@@ -117,7 +117,7 @@ export function Sidebar() {
       </div>
 
       <div className="bg-[#344685] rounded-2xl p-5 text-white text-right">
-        <p className="text-xs opacity-80 mb-1">تحتاج للمساعدة؟</p>
+        <p className="text-sm opacity-80 mb-1">تحتاج للمساعدة؟</p>
         <p className="text-sm font-semibold mb-3">تواصل مع الدعم الفني</p>
         <a
           href="https://wa.me/201033438365"

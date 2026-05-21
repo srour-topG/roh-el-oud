@@ -19,6 +19,11 @@ const Products = sequelize.define(
       defaultValue: 0,
     },
     quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    storeQuantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
+    },
     minQuantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 5 },
     barcode: { type: DataTypes.STRING, allowNull: true },
     categoryId: {

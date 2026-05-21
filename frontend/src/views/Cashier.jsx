@@ -1,29 +1,3 @@
-/**
- * Cashier.jsx — Full POS Cashier System
- * ─────────────────────────────────────────────────────────────────────────────
- * ASSUMED / NEW BACKEND ENDPOINTS (not yet in provided backend):
- *   POST  /sales           → Create sale record + items (see body structure below)
- *   POST  /debts           → Create indebtedness record (uses existing model)
- *
- * EXISTING ENDPOINTS USED:
- *   GET   /products        → { products: [] }   (search, barcode)
- *   POST  /products/sell   → { productID, quantity }  (immediate stock deduct)
- *   POST  /products/stock  → { productID, type, quantity, notes }
- *
- * POST /sales body:
- *   { items: [{productId, quantity, price}], totalPrice, discount,
- *     paidAmount, remainingAmount, status, customerName?, customerPhone? }
- *
- * POST /debts body:
- *   { customerName, customerPhone, invoiceNumber, totalAmount,
- *     paidAmount, remainingAmount, status: "pending"|"partial" }
- *
- * QR/BARCODE SCANNER:
- *   Uses native BarcodeDetector API (Chrome 83+, Edge 83+).
- *   Falls back to a text-entry mode on unsupported browsers.
- * ─────────────────────────────────────────────────────────────────────────────
- */
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import {
@@ -36,6 +10,7 @@ import {
 } from "react-icons/md";
 import { FaProductHunt } from "react-icons/fa";
 import productMockImg from "../assets/roh.jpeg";
+import useBarcodeScanner from "../hooks/useBarcodeScanner";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 const STATIC =
@@ -389,7 +364,7 @@ function Receipt({ data, onNewSale }) {
       win.close();
     }, 300);
   };
-
+  // console.log(data);
   return (
     <div
       style={{
@@ -506,7 +481,7 @@ function Receipt({ data, onNewSale }) {
               />
               <div style={{ fontSize: "12px" }} className="text-gray-800">
                 رقم الفاتورة:{" "}
-                <strong style={{ color: "#1e3a8a" }}>#{data.saleId}</strong>
+                <strong style={{ color: "#1e3a8a" }}>#{data.invoiceNumber}</strong>
               </div>
               <div style={{ fontSize: "11px", color: "#6b7280" }}>
                 {new Date(data.createdAt).toLocaleString("ar-EG")}
@@ -867,7 +842,7 @@ function CheckoutModal({
             >
               إتمام الشراء
             </h2>
-            <p style={{ margin: 0, color: "#6b7280", fontSize: "13px" }}>
+            <p style={{ margin: 0, color: "#6b7280", fontSize: "15px" }}>
               {cart.length} منتج في السلة
             </p>
           </div>
@@ -901,7 +876,7 @@ function CheckoutModal({
             <p
               style={{
                 margin: "0 0 8px",
-                fontSize: "11px",
+                fontSize: "15px",
                 fontWeight: "700",
                 color: "#9ca3af",
                 textTransform: "uppercase",
@@ -917,14 +892,14 @@ function CheckoutModal({
                   display: "flex",
                   justifyContent: "space-between",
                   padding: "3px 0",
-                  fontSize: "13px",
+                  fontSize: "17px",
                 }}
               >
                 <span style={{ color: "#374151" }}>
                   {item.product.name}{" "}
                   <span style={{ color: "#9ca3af" }}>×{item.quantity}</span>
                 </span>
-                <span style={{ fontWeight: "600" }}>
+                <span style={{ fontWeight: "600", color: "#374151" }}>
                   {fmt(item.product.sellPrice * item.quantity)} ج.م
                 </span>
               </div>
@@ -1255,7 +1230,7 @@ function CheckoutModal({
 // ─────────────────────────────────────────────────────────────────────────────
 function CartItem({ item, onQtyChange, onRemove }) {
   const { product, quantity } = item;
-  const atMax = quantity >= product.quantity;
+  const atMax = quantity >= product.storeQuantity;
 
   return (
     <div
@@ -1299,7 +1274,7 @@ function CartItem({ item, onQtyChange, onRemove }) {
         <p
           style={{
             margin: "0 0 1px",
-            fontSize: "12px",
+            fontSize: "18px",
             fontWeight: "700",
             color: "#1a1f36",
             overflow: "hidden",
@@ -1309,7 +1284,7 @@ function CartItem({ item, onQtyChange, onRemove }) {
         >
           {product.name}
         </p>
-        <span style={{ fontSize: "11px", color: "#16a34a", fontWeight: "600" }}>
+        <span style={{ fontSize: "15px", color: "#16a34a", fontWeight: "600" }}>
           {fmt(product.sellPrice)} ج.م
         </span>
       </div>
@@ -1327,8 +1302,8 @@ function CartItem({ item, onQtyChange, onRemove }) {
           onClick={onRemove}
           title="حذف"
           style={{
-            width: "26px",
-            height: "26px",
+            width: "28px",
+            height: "28px",
             borderRadius: "50%",
             border: "none",
             background: "#fef2f2",
@@ -1345,8 +1320,8 @@ function CartItem({ item, onQtyChange, onRemove }) {
         <button
           onClick={() => onQtyChange(quantity - 1)}
           style={{
-            width: "26px",
-            height: "26px",
+            width: "28px",
+            height: "28px",
             borderRadius: "50%",
             border: "1.5px solid #e5e7eb",
             background: "#fff",
@@ -1377,8 +1352,8 @@ function CartItem({ item, onQtyChange, onRemove }) {
           onClick={() => !atMax && onQtyChange(quantity + 1)}
           disabled={atMax}
           style={{
-            width: "26px",
-            height: "26px",
+            width: "28px",
+            height: "28px",
             borderRadius: "50%",
             border: `1.5px solid ${atMax ? "#e5e7eb" : "#1e3a8a"}`,
             background: atMax ? "#f3f4f6" : "#eaeefc",
@@ -1401,7 +1376,7 @@ function CartItem({ item, onQtyChange, onRemove }) {
         style={{
           minWidth: "62px",
           textAlign: "left",
-          fontSize: "13px",
+          fontSize: "17px",
           fontWeight: "800",
           color: "#1a1f36",
           flexShrink: 0,
@@ -1417,8 +1392,8 @@ function CartItem({ item, onQtyChange, onRemove }) {
 // PRODUCT CARD (search / grid)
 // ─────────────────────────────────────────────────────────────────────────────
 function ProductCard({ product, onAdd, cartQty }) {
-  const isOut = product.quantity === 0;
-  const isLow = !isOut && product.quantity <= product.minQuantity;
+  const isOut = product.storeQuantity === 0;
+  const isLow = !isOut && product.storeQuantity <= product.minQuantity;
   const inCart = cartQty > 0;
 
   return (
@@ -1451,8 +1426,8 @@ function ProductCard({ product, onAdd, cartQty }) {
             position: "absolute",
             top: 6,
             left: 6,
-            width: 22,
-            height: 22,
+            width: 24,
+            height: 24,
             borderRadius: "50%",
             background: "#1e3a8a",
             color: "#fff",
@@ -1471,7 +1446,7 @@ function ProductCard({ product, onAdd, cartQty }) {
       {/* Image */}
       <div
         style={{
-          height: 90,
+          height: 120,
           background: "linear-gradient(135deg,#f1f3f9,#e8ecf8)",
           // background: "#FFEFCC",
           display: "flex",
@@ -1500,7 +1475,7 @@ function ProductCard({ product, onAdd, cartQty }) {
             position: "absolute",
             top: 5,
             right: 5,
-            fontSize: "14px",
+            fontSize: "16px",
             fontWeight: "700",
             padding: "2px 6px",
             borderRadius: "12px",
@@ -1508,7 +1483,7 @@ function ProductCard({ product, onAdd, cartQty }) {
             color: isOut ? "#dc2626" : isLow ? "#92400e" : "#15803d",
           }}
         >
-          {isOut ? "نفذ" : `${product.quantity}`}
+          {isOut ? "نفذ" : `${product.storeQuantity}`}
         </span>
       </div>
 
@@ -1523,9 +1498,9 @@ function ProductCard({ product, onAdd, cartQty }) {
         }}
       >
         <p
+          className="text-xl"
           style={{
             margin: 0,
-            fontSize: "14px",
             fontWeight: "700",
             color: "#1a1f36",
             lineHeight: 1.3,
@@ -1538,13 +1513,16 @@ function ProductCard({ product, onAdd, cartQty }) {
           {product.name}
         </p>
         {product.category?.name && (
-          <span style={{ fontSize: "11px", color: "#9ca3af" }}>
+          <span
+            className="text-sm "
+            style={{ fontSize: "11px", color: "#9ca3af" }}
+          >
             {product.category.name}
           </span>
         )}
         <span
           style={{
-            fontSize: "14px",
+            fontSize: "20px",
             fontWeight: "800",
             color: "#16a34a",
             marginTop: "auto",
@@ -1639,11 +1617,12 @@ function Cashier() {
   const fetchProducts = useCallback(async (q = "", catId = null) => {
     setSearchLoading(true);
     try {
-      const params = { limit: 80 };
+      const params = { limit: 80, cashier: true };
       if (q) params.search = q;
       if (catId && catId !== "all") params.categoryId = catId;
       const res = await axios.get(`${apiUrl}/products`, { params });
       const prods = res.data.products || [];
+      // console.log(prods);
       setProducts(prods);
       // collect categories from results
       const cats = {};
@@ -1664,71 +1643,6 @@ function Cashier() {
     setTimeout(() => searchRef.current?.focus(), 150);
   }, []);
 
-  const handleSearch = (val) => {
-    setSearch(val);
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(
-      () => fetchProducts(val, activeCategory),
-      280,
-    );
-  };
-
-  const handleSearchKeyDown = async (e) => {
-    if (e.key !== "Enter") return;
-
-    e.preventDefault();
-
-    const barcode = search.trim();
-
-    if (!barcode) return;
-
-    try {
-      // qr canner as a cache
-      const cachedProduct = barcodeMapRef.current[barcode];
-
-      if (cachedProduct) {
-        if (cachedProduct.quantity <= 0) {
-          showToast(`"${cachedProduct.name}" نفذ من المخزن`, "error");
-          return;
-        }
-
-        addToCart(cachedProduct);
-        setSearch("");
-
-        return;
-      }
-
-      const res = await axios.get(`${apiUrl}/products`, {
-        params: {
-          barcode,
-        },
-      });
-
-      const found = res.data.product;
-
-      if (!found) {
-        showToast("المنتج غير موجود", "error");
-        return;
-      }
-
-      if (found.quantity <= 0) {
-        showToast(`"${found.name}" نفذ من المخزن`, "error");
-        return;
-      }
-
-      // save to cahse
-      barcodeMapRef.current[barcode] = found;
-
-      addToCart(found);
-
-      setSearch("");
-    } catch (e) {
-      console.log(e);
-
-      showToast("حدث خطأ أثناء البحث", "error");
-    }
-  };
-
   const handleCategoryChange = (catId) => {
     setActiveCategory(catId);
     fetchProducts(search, catId);
@@ -1739,16 +1653,16 @@ function Cashier() {
     setCart((prev) => {
       const exists = prev.find((i) => i.product.id === product.id);
       if (exists) {
-        if (exists.quantity >= product.quantity) {
-          showToast(`الكمية القصوى المتاحة: ${product.quantity}`, "error");
+        if (exists.quantity >= product.storeQuantity) {
+          showToast(`الكمية القصوى المتاحة: ${product.storeQuantity}`, "error");
           return prev;
         }
         return prev.map((i) =>
           i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i,
         );
       }
-      if (product.quantity === 0) {
-        showToast(`"${product.name}" نفذ من المخزن`, "error");
+      if (product.storeQuantity === 0) {
+        showToast(`"${product.name}" غير متوفر في المحل`, "error");
         return prev;
       }
       return [...prev, { product, quantity: 1 }];
@@ -1763,7 +1677,7 @@ function Cashier() {
     setCart((prev) =>
       prev.map((i) => {
         if (i.product.id !== productId) return i;
-        return { ...i, quantity: Math.min(newQty, i.product.quantity) };
+        return { ...i, quantity: Math.min(newQty, i.product.storeQuantity) };
       }),
     );
   };
@@ -1783,7 +1697,7 @@ function Cashier() {
     showToast(`جاري البحث: ${value}`, "info");
     try {
       const res = await axios.get(`${apiUrl}/products`, {
-        params: { search: value, limit: 10 },
+        params: { search: value, limit: 10, cashier: true },
       });
       const prods = res.data.products || [];
       // Prefer exact barcode match
@@ -1823,6 +1737,69 @@ function Cashier() {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3200);
   };
+
+  const handleBarcodeScanned = useCallback(
+    async (barcode) => {
+      if (barcodeMapRef.current[barcode] === "pending") return;
+
+      try {
+        let product = barcodeMapRef.current[barcode];
+        if (!product) {
+          barcodeMapRef.current[barcode] = "pending";
+          const res = await axios.get(`${apiUrl}/products`, {
+            params: { barcode },
+          });
+          product = res.data.product;
+          if (!product) {
+            showToast(`المنتج غير موجود (باركود: ${barcode})`, "error");
+            delete barcodeMapRef.current[barcode];
+            return;
+          }
+          barcodeMapRef.current[barcode] = product;
+        }
+
+        if (product.storeQuantity <= 0) {
+          showToast(`"${product.name}" غير متوفر في المحل`, "error");
+          return;
+        }
+
+        addToCart(product);
+        showToast(`تمت إضافة "${product.name}"`, "success");
+      } catch (err) {
+        console.error(err);
+        showToast("خطأ في الاتصال بالخادم", "error");
+      } finally {
+        if (barcodeMapRef.current[barcode] === "pending") {
+          delete barcodeMapRef.current[barcode];
+        }
+      }
+    },
+    [addToCart, showToast],
+  );
+
+  const handleSearch = (val) => {
+    setSearch(val);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(
+      () => fetchProducts(val, activeCategory),
+      280,
+    );
+  };
+
+  const handleSearchKeyDown = async (e) => {
+    if (e.key !== "Enter") return;
+
+    e.preventDefault();
+    // console.log(e.target.value);
+    const barcode = search.trim();
+
+    if (!barcode) return;
+
+    await handleBarcodeScanned(barcode);
+    setSearch("");
+  };
+
+  useBarcodeScanner(handleBarcodeScanned, { minLength: 4, cooldown: 800 });
 
   // ── Checkout success ──────────────────────────────────────────────────────────
   const handleCheckoutSuccess = (receiptData) => {
@@ -1913,16 +1890,15 @@ function Cashier() {
       >
         <div>
           <h1
+            className="text-xl font-extrabold"
             style={{
               margin: "0 0 1px",
-              fontSize: "18px",
-              fontWeight: "900",
               color: "#1a1f36",
             }}
           >
             كاشير
           </h1>
-          <p style={{ margin: 0, fontSize: "11px", color: "#9ca3af" }}>
+          <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>
             نظام نقاط البيع
           </p>
         </div>
@@ -1936,7 +1912,8 @@ function Cashier() {
           <input
             ref={searchRef}
             value={search}
-            onChange={(e) => handleSearchKeyDown}
+            onChange={(e) => handleSearch(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
             placeholder="ابحث بالاسم أو الباركود…"
             className="text-gray-600"
             style={{
@@ -1945,7 +1922,7 @@ function Cashier() {
               padding: "0 2.75rem 0 2.5rem",
               border: "2px solid #e5e7eb",
               borderRadius: "12px",
-              fontSize: "14px",
+              fontSize: "16px",
               background: "#f8f9fc",
               outline: "none",
               fontFamily: "inherit",
@@ -2052,7 +2029,7 @@ function Cashier() {
                     color: activeCategory === cat.id ? "#fff" : "#6b7280",
                     cursor: "pointer",
                     fontFamily: "inherit",
-                    fontSize: "12px",
+                    fontSize: "16px",
                     fontWeight: "600",
                     transition: "all 0.15s",
                   }}
@@ -2094,7 +2071,9 @@ function Cashier() {
                 }}
               >
                 <div style={{ fontSize: "48px", marginBottom: 8 }}>📦</div>
-                <p style={{ margin: 0 }}>لا توجد منتجات مطابقة</p>
+                <p className="text-xl" style={{ margin: 0 }}>
+                  لا توجد منتجات مطابقة
+                </p>
               </div>
             ) : (
               <div
@@ -2153,7 +2132,7 @@ function Cashier() {
                 <h2
                   style={{
                     margin: 0,
-                    fontSize: "16px",
+                    fontSize: "18px",
                     fontWeight: "800",
                     color: "#1a1f36",
                   }}
@@ -2165,7 +2144,7 @@ function Cashier() {
                     style={{
                       background: "#1e3a8a",
                       color: "#fff",
-                      fontSize: "11px",
+                      fontSize: "13px",
                       fontWeight: "700",
                       padding: "1px 7px",
                       borderRadius: "12px",
@@ -2179,7 +2158,7 @@ function Cashier() {
                 <button
                   onClick={clearCart}
                   style={{
-                    fontSize: "11px",
+                    fontSize: "13px",
                     color: "#dc2626",
                     background: "#fef2f2",
                     border: "none",
@@ -2220,7 +2199,7 @@ function Cashier() {
                 }}
               >
                 <div style={{ fontSize: "44px", marginBottom: 8 }}>🛒</div>
-                <p style={{ margin: 0, fontSize: "13px", lineHeight: 1.6 }}>
+                <p style={{ margin: 0, fontSize: "19px", lineHeight: 1.6 }}>
                   السلة فارغة
                   <br />
                   اضغط على منتج لإضافته
@@ -2273,7 +2252,7 @@ function Cashier() {
                         color: discountType === dt.id ? "#1e3a8a" : "#9ca3af",
                         cursor: "pointer",
                         fontFamily: "inherit",
-                        fontSize: "11px",
+                        fontSize: "15px",
                         fontWeight: discountType === dt.id ? "700" : "500",
                       }}
                     >
@@ -2299,7 +2278,7 @@ function Cashier() {
                       padding: "0 2.25rem 0 0.75rem",
                       border: "1.5px solid #e5e7eb",
                       borderRadius: "8px",
-                      fontSize: "13px",
+                      fontSize: "15px",
                       fontFamily: "inherit",
                       outline: "none",
                       textAlign: "right",
@@ -2388,7 +2367,7 @@ function Cashier() {
                   color: "#fff",
                   border: "none",
                   borderRadius: "14px",
-                  fontSize: "16px",
+                  fontSize: "18px",
                   fontWeight: "800",
                   cursor: "pointer",
                   fontFamily: "inherit",
@@ -2410,8 +2389,7 @@ function Cashier() {
                     "0 6px 20px rgba(30,58,138,0.32)";
                 }}
               >
-                💳 إتمام الدفع <span className="text-green-100">·</span>{" "}
-                {fmt(total)} ج.م
+                💳 إتمام الدفع {fmt(total)} ج.م
               </button>
             </div>
           )}

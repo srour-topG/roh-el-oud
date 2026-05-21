@@ -32,7 +32,14 @@ exports.upload = multer({
 // ── GET /products ──────────────────────────────────────────────────────────────
 exports.getProducts = async (req, res) => {
   try {
-    const { search, category, status, page = 1, limit = 10 } = req.query;
+    const {
+      search,
+      category,
+      status,
+      page = 1,
+      limit = 10,
+      cashier,
+    } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
     const where = {};
 
@@ -44,6 +51,11 @@ exports.getProducts = async (req, res) => {
     }
     if (req.query.categoryId) {
       where.categoryId = req.query.categoryId;
+    }
+    if (cashier === "true") {
+      where.storeQuantity = {
+        [Op.gt]: 0,
+      };
     }
 
     if (status === "low") {
@@ -297,15 +309,18 @@ exports.sellProduct = async (req, res) => {
     if (!product) return res.status(404).json({ Message: "المنتج غير موجود" });
 
     const qty = parseInt(quantity);
-    if (product.quantity < qty) {
+    if (product.storeQuantity < qty) {
       return res.status(400).json({
         statusCode: "400",
-        Message: `الكمية المتاحة ${product.quantity} فقط`,
+        Message: `الكمية المتاحة ${product.storeQuantity} فقط`,
       });
     }
 
-    const newQty = product.quantity - qty;
-    await Products.update({ quantity: newQty }, { where: { id: productID } });
+    const newQty = product.storeQuantity - qty;
+    await Products.update(
+      { storeQuantity: newQty },
+      { where: { id: productID } },
+    );
     await StockMovements.create({
       productID,
       type: "remove",
@@ -524,5 +539,72 @@ exports.getAnalytics = async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ statusCode: "500", Message: "حدث خطأ ما" });
+  }
+};
+
+exports.storeTransfer = async (req, res) => {
+  try {
+    const { productID, quantity, type } = req.body;
+
+    const product = await Products.findByPk(productID);
+
+    if (!product) {
+      return res.status(404).json({
+        Message: "المنتج غير موجود",
+      });
+    }
+
+    const qty = parseInt(quantity);
+
+    if (type === "toStore") {
+      if (product.quantity < qty) {
+        return res.status(400).json({
+          Message: "الكمية غير متوفرة بالمخزن",
+        });
+      }
+
+      product.quantity -= qty;
+      product.storeQuantity += qty;
+    }
+
+    if (type === "toWarehouse") {
+      if (product.storeQuantity < qty) {
+        return res.status(400).json({
+          Message: "الكمية غير متوفرة بالمحل",
+        });
+      }
+
+      product.storeQuantity -= qty;
+      product.quantity += qty;
+    }
+
+    await product.save();
+
+    // await StockMovements.create({
+    //   productID: product.id,
+    //   type: "transfer",
+    //   quantity: qty,
+    //   quantityAfter:
+    //     type === "toStore"
+    //       ? product.storeQuantity
+    //       : product.quantity,
+    //   unitPrice: parseFloat(product.buyPrice),
+    //   notes:
+    //     type === "toStore"
+    //       ? "نقل إلى المحل"
+    //       : "إرجاع إلى المخزن",
+    //   date: DateNowHour(),
+    // });
+
+    res.json({
+      statusCode: "200",
+      Message: "تمت العملية بنجاح",
+    });
+  } catch (e) {
+    console.error(e);
+
+    res.status(500).json({
+      Message: "حدث خطأ",
+    });
   }
 };

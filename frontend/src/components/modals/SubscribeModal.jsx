@@ -43,7 +43,7 @@ export default function SubscribeModal({
         endDate,
         paidAmount: paidAmount,
       });
-      console.log("res", res.data);
+      // console.log("res", res.data);
       onSuccess(res.data);
     } catch (e) {
       setError(e.response?.data?.Message || "حدث خطأ، حاول مرة أخرى");

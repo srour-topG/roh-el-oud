@@ -52,7 +52,7 @@ function StatusBadge({ status }) {
   const c = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${c.bg} ${c.text} ${c.border}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-lg font-semibold border ${c.bg} ${c.text} ${c.border}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
       {c.label}
@@ -297,7 +297,7 @@ export default function Debt() {
           search: debouncedSearch || undefined,
         },
       });
-      console.log("ressssssss : ", res);
+      // console.log("ressssssss : ", res);
       setDebts(res.data.debts);
       setTotalPages(res.data.totalPages);
       setTotalItems(res.data.totalItems);
@@ -401,7 +401,7 @@ export default function Debt() {
               key={card.label}
               className={`${card.bg} border ${card.border} rounded-2xl px-5 py-4`}
             >
-              <p className="text-xs text-gray-500 mb-1">{card.label}</p>
+              <p className="text-lg text-gray-500 mb-1">{card.label}</p>
               <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
             </div>
           ))}
@@ -423,7 +423,7 @@ export default function Debt() {
                 setCurrentPage(1);
               }}
               placeholder="بحث بالاسم..."
-              className="w-full pr-9 pl-4 py-2.5 text-sm border text-gray-600 border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
+              className="w-full pr-9 pl-4 py-2.5 text-lg border text-gray-600 border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
             />
           </div>
 
@@ -436,7 +436,7 @@ export default function Debt() {
                   setStatus(tab.key);
                   setCurrentPage(1);
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                className={`px-3 py-1.5 rounded-lg text-md font-medium transition ${
                   statusFilter === tab.key
                     ? "bg-white text-gray-900 shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
@@ -454,14 +454,14 @@ export default function Debt() {
                 setStatus("all");
                 setCurrentPage(1);
               }}
-              className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600 px-2 py-1.5 rounded-lg hover:bg-red-50 transition"
+              className="flex items-center gap-1 text-sm text-red-500 hover:text-red-600 px-2 py-1.5 rounded-lg hover:bg-red-50 transition"
             >
               <MdClose size={14} />
               مسح
             </button>
           )}
 
-          <span className="mr-auto text-xs text-gray-400">
+          <span className="mr-auto text-sm text-gray-400">
             {totalItems} دين
           </span>
         </div>
@@ -472,25 +472,25 @@ export default function Debt() {
             <table className="w-full text-sm text-right">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr className="text-gray-500">
-                  <th className="px-6 py-4 font-semibold text-center">
+                  <th className="px-6 py-4 text-lg font-semibold text-center">
                     العميل
                   </th>
-                  <th className="px-6 py-4 font-semibold text-center">
+                  <th className="px-6 py-4 text-lg font-semibold text-center">
                     السعر الكامل
                   </th>
-                  <th className="px-6 py-4 font-semibold text-center">
+                  <th className="px-6 py-4 text-lg font-semibold text-center">
                     المدفوع
                   </th>
-                  <th className="px-6 py-4 font-semibold text-center">
+                  <th className="px-6 py-4 text-lg font-semibold text-center">
                     المتبقي
                   </th>
-                  <th className="px-6 py-4 font-semibold text-center">
+                  <th className="px-6 py-4 text-lg font-semibold text-center">
                     الحالة
                   </th>
-                  <th className="px-6 py-4 font-semibold text-center">
+                  <th className="px-6 py-4 text-lg font-semibold text-center">
                     التاريخ
                   </th>
-                  <th className="px-6 py-4 font-semibold text-center">إجراء</th>
+                  <th className="px-6 py-4 text-lg font-semibold text-center">إجراء</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -529,10 +529,10 @@ export default function Debt() {
                             fallbackIcon={IoPersonCircleOutline}
                           />
                           <div>
-                            <p className="font-semibold text-gray-800 text-sm">
+                            <p className="font-semibold text-gray-800 text-lg">
                               {debt.customerName}
                             </p>
-                            <p className="text-xs text-gray-400">
+                            <p className="text-sm text-gray-400">
                               #{debt.invoiceNumber}
                             </p>
                           </div>
@@ -540,19 +540,19 @@ export default function Debt() {
                       </td>
 
                       {/* Total */}
-                      <td className="px-6 py-4 text-center text-gray-600 font-medium">
+                      <td className="px-6 py-4 text-center text-gray-600 font-medium text-xl">
                         {fmtNum(debt.totalAmount)} ج.م
                       </td>
 
                       {/* Paid */}
-                      <td className="px-6 py-4 text-center text-emerald-600 font-semibold">
+                      <td className="px-6 py-4 text-center text-emerald-600 font-semibold text-xl">
                         {fmtNum(debt.paidAmount)} ج.م
                       </td>
 
                       {/* Remaining */}
                       <td className="px-6 py-4 text-center">
                         <span
-                          className={`font-bold text-sm ${
+                          className={`font-bold text-xl ${
                             parseFloat(debt.remainingAmount) > 0
                               ? "text-red-600"
                               : "text-emerald-600"
@@ -568,7 +568,7 @@ export default function Debt() {
                       </td>
 
                       {/* Date */}
-                      <td className="px-6 py-4 text-center text-gray-500 text-xs">
+                      <td className="px-6 py-4 text-center text-gray-500 text-lg">
                         {new Date(debt.createdAt).toLocaleDateString("ar-EG")}
                       </td>
 
@@ -581,7 +581,7 @@ export default function Debt() {
                               title="تسجيل دفعة"
                               className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 transition"
                             >
-                              <MdPayment size={16} />
+                              <MdPayment size={22} />
                             </button>
                           )}
                           <button
@@ -592,7 +592,7 @@ export default function Debt() {
                             title="حذف"
                             className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 transition"
                           >
-                            <MdDeleteOutline size={16} />
+                            <MdDeleteOutline size={22} />
                           </button>
                         </div>
                       </td>

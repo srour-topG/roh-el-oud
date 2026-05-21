@@ -208,7 +208,7 @@ function Users() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">الموظفين</h1>
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="text-gray-500 text-lg mt-1">
               إدارة حسابات فريق العمل
             </p>
           </div>
@@ -223,13 +223,13 @@ function Users() {
 
         {/* Filter Bar */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="relative w-full md:w-80">
+          <div className="relative w-full md:w-100">
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <IoSearch className="text-gray-400" />
             </div>
             <input
               type="text"
-              className="block w-full p-2.5 pr-10 text-sm text-gray-900 bg-gray-50 border border-gray-200 rounded-full focus:ring-blue-500 focus:border-blue-500"
+              className="block w-full p-2.5 pr-10 text-base text-gray-900 bg-gray-50 border border-gray-200 rounded-full focus:ring-blue-500 focus:border-blue-500"
               placeholder="بحث بالاسم أو اسم المستخدم..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -239,7 +239,7 @@ function Users() {
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             <div className="relative w-40">
               <select
-                className="w-full appearance-none bg-gray-50 border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pl-8"
+                className="w-full appearance-none bg-gray-50 border border-gray-300 text-gray-700 text-base rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 pl-8"
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
               >
@@ -255,7 +255,7 @@ function Users() {
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1 text-red-500 hover:text-red-600 text-sm font-medium px-2"
+                className="flex items-center gap-1 text-red-500 hover:text-red-600 text-base font-medium px-2"
               >
                 <IoFilterOutline />
                 مسح الفلاتر
@@ -268,7 +268,7 @@ function Users() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-right">
-              <thead className="bg-gray-50 text-gray-500 border-b border-gray-200">
+              <thead className="bg-gray-50 text-gray-500 border-b border-gray-200 text-lg">
                 <tr>
                   <th className="px-6 py-4 font-semibold text-center">
                     الموظف
@@ -309,7 +309,7 @@ function Users() {
                   </tr>
                 ) : (
                   paginatedUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50 transition">
+                    <tr key={user.id} className="hover:bg-gray-50 transition text-base">
                       <td className="px-6 py-4 text-right font-medium text-gray-800">
                         <div className="flex items-center justify-start gap-2">
                           <IoPersonCircleOutline className="w-8 h-8 text-gray-400" />
@@ -335,7 +335,7 @@ function Users() {
                       </td>
                       <td className="px-6 py-4 text-center">
                         {user.status === "active" ? (
-                          <span className="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                          <span className="inline-flex items-center bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded-full">
                             <span className="w-2 h-2 me-1 bg-green-500 rounded-full"></span>
                             نشط
                           </span>

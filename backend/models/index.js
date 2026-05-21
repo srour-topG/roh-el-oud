@@ -4,6 +4,7 @@ const Indebtedness = require("./indebtedness.model");
 const Categories = require("./category.models");
 const Sales = require("./sale.model");
 const SaleItems = require("./saleItems.model");
+const FinancialTransaction = require("./financialTransaction.model");
 
 
 Products.hasMany(StockMovements, { foreignKey: "productID" });
@@ -45,4 +46,5 @@ module.exports = {
   StockMovements,
   Sales,
   SaleItems,
+  FinancialTransaction
 };

@@ -184,7 +184,7 @@ function MainLayout() {
             <Route
               path="/expenses"
               element={
-                <ProtectedRoute allowedRoles={["admin", "manager"]}>
+                <ProtectedRoute allowedRoles={["admin", "manager", "cashier"]}>
                   <Expenses />
                 </ProtectedRoute>
               }

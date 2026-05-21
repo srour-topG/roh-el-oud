@@ -7,6 +7,7 @@ const {
   Products,
   Indebtedness,
   StockMovements,
+  FinancialTransaction,
 } = require("../../models");
 
 const { DateNow } = require("../../utils/date");
@@ -79,6 +80,21 @@ exports.createSale = async (req, res) => {
       { transaction: t },
     );
 
+    if (paidAmount > 0) {
+      await FinancialTransaction.create(
+        {
+          type: "SALE",
+          invoiceNumber,
+          amount: paidAmount,
+          sourceType: "SALE",
+          sourceId: sale.id,
+          notes: `دفع فاتورة ${invoiceNumber}`,
+          date: DateNow(),
+        },
+        { transaction: t },
+      );
+    }
+
     const saleItemsData = [];
     const stockMovementsData = [];
 
@@ -111,11 +127,11 @@ exports.createSale = async (req, res) => {
         });
       }
 
-      if (product.quantity < quantity) {
+      if (product.storeQuantity < quantity) {
         await t.rollback();
 
         return res.status(400).json({
-          Message: `${product.name} الكمية غير متوفرة`,
+          Message: `${product.name} الكمية غير متوفرة في المحل`,
         });
       }
 
@@ -142,7 +158,7 @@ exports.createSale = async (req, res) => {
       // UPDATE PRODUCT STOCK
       await product.update(
         {
-          quantity: product.quantity - quantity,
+          storeQuantity: product.storeQuantity - quantity,
         },
         { transaction: t },
       );
@@ -321,152 +337,129 @@ exports.returnSaleItems = async (req, res) => {
 
   try {
     const saleId = req.params.id;
-
     const { items } = req.body;
 
-    const sale = await Sales.findByPk(saleId, {
+    const sale = await Sales.findOne({
+      where: {
+        [Op.or]: [
+          { id: isNaN(saleId) ? 0 : saleId },
+          { invoiceNumber: saleId },
+        ],
+      },
       include: [
         {
           model: SaleItems,
           include: [
             {
               model: Products,
-              attributes: ["id", "name", "barcode", "sellPrice"],
+              attributes: [
+                "id",
+                "name",
+                "barcode",
+                "sellPrice",
+                "storeQuantity",
+              ],
             },
           ],
         },
       ],
-      transaction: t,
-      lock: true,
     });
 
     if (!sale) {
-      await t.rollback();
-
-      return res.status(404).json({
-        Message: "الفاتورة غير موجودة",
-      });
+      return res.status(404).json({ Message: "الفاتورة غير موجودة" });
     }
 
-    let returnedAmount = 0;
+    let totalRefundAmount = 0;
+    const financialTransactions = [];
 
-    // something went wrong
     for (const item of items) {
       const saleItem = sale.SaleItems.find((i) => i.id === item.saleItemId);
-
       if (!saleItem) continue;
 
       const qty = parseInt(item.quantity);
-
       const available = saleItem.quantity - saleItem.returnedQuantity;
 
       if (qty > available) {
         await t.rollback();
+        return res.status(400).json({ Message: "كمية المرتجع أكبر من المتاح" });
+      }
 
-        return res.status(400).json({
-          Message: "كمية المرتجع أكبر من المتاح",
+      const updatedReturnedQty = saleItem.returnedQuantity + qty;
+      await saleItem.update(
+        { returnedQuantity: updatedReturnedQty },
+        { transaction: t },
+      );
+
+      const product = saleItem.Product;
+      const newStoreQuantity = product.storeQuantity + qty;
+      await product.update(
+        { storeQuantity: newStoreQuantity },
+        { transaction: t },
+      );
+
+      const itemRefund = qty * saleItem.price;
+      const remainingRefundable = sale.paidAmount - (sale.returnedAmount || 0);
+      const actualRefund = Math.min(itemRefund, remainingRefundable);
+      totalRefundAmount += actualRefund;
+
+      if (actualRefund > 0) {
+        financialTransactions.push({
+          type: "RETURN",
+          invoiceNumber: sale.invoiceNumber,
+          amount: -actualRefund,
+          sourceType: "SALE_RETURN",
+          sourceId: sale.id,
+          notes: `مرتجع فاتورة ${sale.invoiceNumber} - منتج ${product.name}`,
+          date: DateNow(),
         });
       }
 
-      // UPDATE RETURNED QTY
-      const updatedReturnedQty = saleItem.returnedQuantity + qty;
-
-      await saleItem.update(
-        {
-          returnedQuantity: updatedReturnedQty,
-        },
-        { transaction: t },
-      );
-
-      // UPDATE STOCK
-      const product = await Products.findByPk(saleItem.productId, {
-        transaction: t,
-        lock: t.LOCK.UPDATE,
-      });
-
-      const newQuantity = Number(product.quantity) + qty;
-
-      await product.update(
-        {
-          quantity: newQuantity,
-        },
-        { transaction: t },
-      );
-
-      // TOTAL RETURNED MONEY
-      const itemReturnValue = qty * saleItem.price;
-
-      const remainingRefundable =
-        Number(sale.paidAmount) - Number(sale.returnedAmount || 0);
-
-      const actualRefund = Math.min(itemReturnValue, remainingRefundable);
-
-      returnedAmount += actualRefund;
-
-      // STOCK MOVEMENT
       await StockMovements.create(
         {
-          productID: saleItem.productId,
+          productID: product.id,
           type: "returned",
           quantity: qty,
-          quantityAfter: newQuantity,
+          quantityAfter: newStoreQuantity,
           unitPrice: saleItem.price,
           date: DateNow(),
           notes: `مرتجع فاتورة ${sale.invoiceNumber}`,
         },
         { transaction: t },
       );
-
-      // UPDATE LOCAL INSTANCE
-      saleItem.returnedQuantity = updatedReturnedQty;
     }
 
-    /*
-      CALCULATE FINAL STATUS
-    */
+    if (financialTransactions.length) {
+      await FinancialTransaction.bulkCreate(financialTransactions, {
+        transaction: t,
+      });
+    }
 
     const allItemsReturned = sale.SaleItems.every(
       (item) => item.returnedQuantity >= item.quantity,
     );
-
     const hasAnyReturned = sale.SaleItems.some(
       (item) => item.returnedQuantity > 0,
     );
 
     let newStatus = sale.status;
+    if (allItemsReturned) newStatus = "RETURNED";
+    else if (hasAnyReturned) newStatus = "PARTIALLY_RETURNED";
 
-    if (allItemsReturned) {
-      newStatus = "RETURNED";
-    } else if (hasAnyReturned) {
-      newStatus = "PARTIALLY_RETURNED";
-    }
-
-    let updatedRemaining = parseFloat(sale.remainingAmount || 0);
-
+    let updatedRemaining = sale.remainingAmount;
     const debt = await Indebtedness.findOne({
       where: { invoiceNumber: sale.invoiceNumber },
       transaction: t,
-      lock: true,
     });
 
     if (debt) {
-      const returned = returnedAmount;
-      const newRemaining =
-        Number(debt.totalAmount) - Number(debt.paidAmount) - returned;
-
-      const debtStatus =
-        newRemaining <= 0
-          ? "paid"
-          : Number(debt.paidAmount) > 0 || returned > 0
-            ? "partial"
-            : "pending";
+      const newRemaining = debt.remainingAmount - totalRefundAmount;
       updatedRemaining = Math.max(0, newRemaining);
-
+      const debtStatus = newRemaining <= 0 ? "paid" : "partial";
       await debt.update(
         {
-          remainingAmount: Math.max(0, newRemaining),
+          remainingAmount: updatedRemaining,
           status: debtStatus,
-          notes: "تم تعديل الدين بسبب مرتجع",
+          notes: `تم تعديل الدين بسبب مرتجع (${totalRefundAmount} ج.م)`,
         },
         { transaction: t },
       );
@@ -474,7 +467,7 @@ exports.returnSaleItems = async (req, res) => {
 
     await sale.update(
       {
-        returnedAmount: parseFloat(sale.returnedAmount || 0) + returnedAmount,
+        returnedAmount: (sale.returnedAmount || 0) + totalRefundAmount,
         returnedAt: new Date(),
         status: newStatus,
         remainingAmount: updatedRemaining,
@@ -486,12 +479,78 @@ exports.returnSaleItems = async (req, res) => {
 
     return res.json({
       Message: "تم إنشاء المرتجع بنجاح",
+      refundedAmount: totalRefundAmount,
     });
   } catch (e) {
     await t.rollback();
+    console.error(e);
+    return res.status(500).json({ Message: "حدث خطأ", error: e.message });
+  }
+};
 
+exports.getFinanceOverview = async (req, res) => {
+  console.log("Finance overview called");
+  try {
+    const { startDate, endDate } = req.query;
+
+    const where = {};
+
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+
+      where.createdAt = {
+        [Op.between]: [start, end],
+      };
+    }
+
+    const income =
+      (await FinancialTransaction.sum("amount", {
+        where: {
+          ...where,
+          type: {
+            [Op.in]: ["SALE", "DEBT_PAYMENT"],
+          },
+        },
+      })) || 0;
+
+    const returns =
+      (await FinancialTransaction.sum("amount", {
+        where: {
+          ...where,
+          type: "RETURN",
+        },
+      })) || 0;
+
+    const expenses =
+      (await FinancialTransaction.sum("amount", {
+        where: {
+          ...where,
+          type: {
+            [Op.in]: ["EXPENSE", "WITHDRAWAL"],
+          },
+        },
+      })) || 0;
+
+    const net = Number(income) - Math.abs(Number(returns)) - Number(expenses);
+
+    const transactions = await FinancialTransaction.findAll({
+      where,
+      order: [["createdAt", "DESC"]],
+    });
+
+    return res.json({
+      income: Number(income),
+      returns: Math.abs(Number(returns)),
+      expenses: Number(expenses),
+      net,
+      transactions,
+    });
+  } catch (e) {
     console.log(e);
-
     return res.status(500).json({
       Message: "حدث خطأ",
     });

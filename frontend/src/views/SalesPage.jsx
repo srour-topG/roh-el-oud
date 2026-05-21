@@ -177,7 +177,7 @@ export default function SalesPage() {
 
         {/* KPI CARDS */}
 
-        <div className="flex flex-col items-start justify-center gap-4">
+        <div className="flex  items-start justify-between gap-4">
           <div className="relative w-full lg:w-96">
             <MdSearch
               className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -190,7 +190,7 @@ export default function SalesPage() {
               placeholder="ابحث برقم الفاتورة..."
               className="
               w-full h-12 rounded-2xl border border-slate-200
-              bg-white pr-12 pl-12 text-sm
+              bg-white pr-12 pl-12 text-base
               outline-none transition-all
               focus:border-blue-400
               focus:ring-4 focus:ring-blue-100

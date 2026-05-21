@@ -52,6 +52,8 @@ const getTypeLabel = (category, subType) => {
       return "زائر";
     case "stockPurchase":
       return "شراء مخزون";
+    case "debt_payment":
+      return "دين";
     default:
       return "إيراد";
   }
@@ -93,45 +95,53 @@ export default function DailyTransactionsPanel({
       // 2. المبيعات (الإيرادات والمرتجعات)
       let productSales = [];
       try {
-        const productsRes = await axios.get(`${apiUrl}/sales`, {
-          params: {
-            startDate,
-            endDate,
-            limit: 2000,
+        const overviewRes = await axios.get(
+          `${apiUrl}/sales/finance-overview`,
+          {
+            params: { startDate, endDate, limit: 2000 },
           },
-        });
-        productSales = (productsRes.data.sales || []).flatMap((sale) => {
-          const paid = Number(sale.paidAmount || 0);
-          const returned = Number(sale.returnedAmount || 0);
-          const rows = [];
+        );
 
-          if (paid > 0) {
-            rows.push({
-              id: `sale-income-${sale.id}`,
-              date: sale.createdAt,
-              type: "income",
-              subType: "product",
-              description: `فاتورة ${sale.invoiceNumber}`,
-              amount: paid,
-              reference: sale.id,
-            });
-          }
+        const transactions = overviewRes.data.transactions || [];
 
-          if (returned > 0) {
-            rows.push({
-              id: `sale-return-${sale.id}`,
-              date: sale.returnedAt || sale.updatedAt,
-              type: "return",
-              subType: "return",
-              description: `مرتجع فاتورة ${sale.invoiceNumber}`,
-              amount: returned,
-              reference: sale.id,
-            });
-          }
-          return rows;
-        });
+        productSales = transactions
+          .map((trx) => {
+            const amount = Math.abs(parseFloat(trx.amount));
+            const isSale = trx.type === "SALE";
+            const isDebtPayment = trx.type === "DEBT_PAYMENT";
+            const isReturn = trx.type === "RETURN";
+
+            if (isSale || isDebtPayment) {
+              return {
+                id: `${trx.type.toLowerCase()}-${trx.id}`,
+                date: trx.createdAt,
+                type: "income",
+                subType: isDebtPayment ? "debt_payment" : "product",
+                description: trx.notes || `فاتورة ${trx.invoiceNumber}`,
+                amount: amount,
+                reference: trx.sourceId,
+              };
+            }
+
+            if (isReturn) {
+              return {
+                id: `return-${trx.id}`,
+                date: trx.createdAt,
+                type: "return",
+                subType: "return",
+                description: trx.notes || `مرتجع فاتورة ${trx.invoiceNumber}`,
+                amount: amount,
+                reference: trx.sourceId,
+              };
+            }
+
+            return null; 
+          })
+          .filter(Boolean);
+
+        // console.log("📊 Transactions loaded:", productSales);
       } catch (e) {
-        console.error("❌ فشل جلب مبيعات المنتجات:", e);
+        console.error("❌ فشل جلب المعاملات المالية:", e);
       }
 
       // 3. إضافات المخزون (شراء منتجات) -> مصروف موجب
@@ -241,7 +251,7 @@ export default function DailyTransactionsPanel({
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col h-full">
       {/* Header */}
       <div className="px-5 pt-5 pb-4 border-b border-gray-50 flex items-center justify-between">
-        <h3 className="text-base font-bold text-gray-800">
+        <h3 className="text-xl font-bold text-gray-800">
           كشف المعاملات المالية
         </h3>
         <button
@@ -258,14 +268,14 @@ export default function DailyTransactionsPanel({
       {/* ملخص الوارد والمدفوع */}
       <div className="grid grid-cols-2 gap-3 px-5 pt-3 pb-2">
         <div className="bg-emerald-50 rounded-xl p-3 text-center">
-          <p className="text-xs text-emerald-600 font-medium">إجمالي الوارد</p>
-          <p className="text-xl font-bold text-emerald-700">
+          <p className="text-xl text-emerald-600 font-medium">إجمالي الوارد</p>
+          <p className="text-xl font-bold text-emerald-700 mt-1">
             {fmtNum(totalIncome)} ج.م
           </p>
         </div>
         <div className="bg-red-50 rounded-xl p-3 text-center">
-          <p className="text-xs text-red-600 font-medium">إجمالي المدفوع</p>
-          <p className="text-xl font-bold text-red-700">
+          <p className="text-xl text-red-600 font-medium">إجمالي المدفوع</p>
+          <p className="text-xl font-bold text-red-700 mt-1">
             {fmtNum(totalExpense)} ج.م
           </p>
         </div>
@@ -285,7 +295,7 @@ export default function DailyTransactionsPanel({
         ) : transactions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <MdReceipt size={48} className="text-gray-300 mb-3" />
-            <p className="text-sm text-gray-400">
+            <p className="text-lg text-gray-400">
               لا توجد معاملات في هذه الفترة
             </p>
           </div>
@@ -304,7 +314,7 @@ export default function DailyTransactionsPanel({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                          className={`text-sm font-medium px-2 py-0.5 rounded-full ${
                             t.type === "income"
                               ? "bg-green-100 text-green-700"
                               : t.type === "expense"
@@ -316,22 +326,22 @@ export default function DailyTransactionsPanel({
                         >
                           {getTypeLabel(t.type, t.subType)}
                         </span>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-sm text-gray-400">
                           {format(new Date(t.date), "hh:mm a", { locale: ar })}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-700 mt-1 truncate">
+                      <p className="text-base text-gray-700 mt-1 truncate">
                         {t.description}
                       </p>
                       {t.quantity && (
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-sm text-gray-400 mt-0.5">
                           الكمية: {t.quantity} × {fmtNum(t.unitPrice)} ج.م
                         </p>
                       )}
                     </div>
                   </div>
                   <div
-                    className={`text-sm font-bold flex-shrink-0 ${
+                    className={`text-lg font-bold flex-shrink-0 ${
                       t.type === "income"
                         ? "text-emerald-600"
                         : t.type === "expense"

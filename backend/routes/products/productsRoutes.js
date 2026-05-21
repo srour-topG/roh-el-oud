@@ -11,6 +11,7 @@ const {
   getAnalytics,
   sellProduct,
   upload,
+  storeTransfer,
 } = require("../../controllers/products/productsController");
 
 // Analytics & movements
@@ -27,5 +28,6 @@ router.delete("/api/products/:id", deleteProduct);
 // Stock & sell
 router.post("/api/products/stock", stockMovement);
 router.post("/api/products/sell", sellProduct);
+router.post("/api/products/store-transfer", storeTransfer);
 
 module.exports = router;

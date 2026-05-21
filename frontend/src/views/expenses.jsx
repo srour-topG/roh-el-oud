@@ -115,7 +115,7 @@ function AddExpenseModal({ onClose, onSuccess }) {
     padding: "0 0.875rem",
     border: `1.5px solid ${err ? "#ef4444" : "#e5e7eb"}`,
     borderRadius: "10px",
-    fontSize: "14px",
+    fontSize: "16px",
     background: "#f9fafb",
     color: "#374151",
     outline: "none",
@@ -199,14 +199,14 @@ function AddExpenseModal({ onClose, onSuccess }) {
             <h3
               style={{
                 margin: 0,
-                fontSize: "17px",
+                fontSize: "20px",
                 fontWeight: "700",
                 color: "#1a1f36",
               }}
             >
               إضافة نفقة
             </h3>
-            <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>
+            <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af" }}>
               تسجيل مصروف جديد
             </p>
           </div>
@@ -231,7 +231,7 @@ function AddExpenseModal({ onClose, onSuccess }) {
                 <label
                   style={{
                     display: "block",
-                    fontSize: "13px",
+                    fontSize: "18px",
                     fontWeight: "600",
                     color: "#374151",
                     marginBottom: "6px",
@@ -265,7 +265,7 @@ function AddExpenseModal({ onClose, onSuccess }) {
                 <label
                   style={{
                     display: "block",
-                    fontSize: "13px",
+                    fontSize: "18px",
                     fontWeight: "600",
                     color: "#374151",
                     marginBottom: "6px",
@@ -707,14 +707,14 @@ export default function Expenses() {
             <h1
               style={{
                 margin: "0 0 4px",
-                fontSize: "22px",
+                fontSize: "24px",
                 fontWeight: "800",
                 color: "#1a1f36",
               }}
             >
               النفقات
             </h1>
-            <p style={{ margin: 0, fontSize: "14px", color: "#6b7280" }}>
+            <p style={{ margin: 0, fontSize: "18px", color: "#6b7280" }}>
               تتبع وإدارة المصروفات والسحوبات
             </p>
           </div>
@@ -727,7 +727,7 @@ export default function Expenses() {
               color: "#fff",
               border: "none",
               borderRadius: "10px",
-              fontSize: "14px",
+              fontSize: "20px",
               fontWeight: "700",
               cursor: "pointer",
               fontFamily: "inherit",
@@ -759,7 +759,7 @@ export default function Expenses() {
             gap: "0.75rem",
           }}
         >
-          <div style={{ fontSize: "12px", color: "#6b7280" }}>
+          <div style={{ fontSize: "16px", color: "#6b7280" }}>
             {start} → {end}
           </div>
           <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
@@ -768,7 +768,7 @@ export default function Expenses() {
                 <button
                   key={t.key}
                   onClick={() => handlePeriodChange(t.key)}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-1.5 rounded-lg text-lg font-medium transition-all ${
                     period === t.key
                       ? "bg-white text-gray-900 shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
@@ -790,7 +790,7 @@ export default function Expenses() {
                   setOpenPicker(true);
                   setPickerView(period);
                 }}
-                className="px-3 py-1.5 rounded-xl bg-white shadow text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+                className="px-3 py-1.5 rounded-xl bg-white shadow text-lg font-semibold text-gray-700 hover:bg-gray-50 transition"
               >
                 {displayLabel(selectedDate, period)}
               </button>
@@ -807,7 +807,7 @@ export default function Expenses() {
               </button>
               <button
                 onClick={() => setSelectedDate(new Date())}
-                className="ml-2 px-3 py-1.5 text-xs rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition"
+                className="ml-2 px-3 py-1.5 text-sm rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition"
               >
                 اليوم
               </button>
@@ -846,8 +846,8 @@ export default function Expenses() {
           >
             <div>
               <div
+                className="text-xl font-semibold"
                 style={{
-                  fontSize: "11px",
                   color: "rgba(255,255,255,0.7)",
                   marginBottom: "6px",
                 }}
@@ -860,12 +860,12 @@ export default function Expenses() {
                   fontWeight: "900",
                   color: "#fff",
                   lineHeight: 1,
-                  marginBottom: "4px",
+                  marginBottom: "12px",
                 }}
               >
                 {total.toLocaleString("ar-EG")} ج.م
               </div>
-              <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)" }}>
+              <div style={{ fontSize: "15px", color: "rgba(255,255,255,0.6)" }}>
                 {start} → {end}
               </div>
             </div>
@@ -885,7 +885,7 @@ export default function Expenses() {
           </div>
 
           {/* Withdrawals Total (positive) */}
-          <div
+          {/* <div
             style={{
               background: "#fff",
               border: "1px solid #eef0f5",
@@ -898,6 +898,7 @@ export default function Expenses() {
           >
             <div>
               <div
+                className="text-xl font-semibold"
                 style={{
                   fontSize: "11px",
                   color: "#9ca3af",
@@ -917,7 +918,7 @@ export default function Expenses() {
                 {withdrawalsTotal.toLocaleString("ar-EG")} ج.م
               </div>
               <div
-                style={{ fontSize: "11px", color: "#9ca3af", marginTop: "4px" }}
+                style={{ fontSize: "15px", color: "#9ca3af", marginTop: "12px" }}
               >
                 تخصم من إجمالي النفقات
               </div>
@@ -935,7 +936,7 @@ export default function Expenses() {
             >
               <MdAttachMoney size={20} color="#f97316" />
             </div>
-          </div>
+          </div> */}
 
           {/* Count of transactions */}
           <div
@@ -951,6 +952,7 @@ export default function Expenses() {
           >
             <div>
               <div
+                className="text-xl font-semibold"
                 style={{
                   fontSize: "11px",
                   color: "#9ca3af",
@@ -970,7 +972,7 @@ export default function Expenses() {
                 {expenses.length}
               </div>
               <div
-                style={{ fontSize: "11px", color: "#9ca3af", marginTop: "4px" }}
+                style={{ fontSize: "15px", color: "#9ca3af", marginTop: "12px" }}
               >
                 (نفقة + سحب)
               </div>
@@ -993,6 +995,7 @@ export default function Expenses() {
           {/* Average per day */}
           {avgPerDay !== null && (
             <div
+              
               style={{
                 background: "#fff",
                 border: "1px solid #eef0f5",
@@ -1005,6 +1008,7 @@ export default function Expenses() {
             >
               <div>
                 <div
+                  className="text-xl font-semibold"
                   style={{
                     fontSize: "11px",
                     color: "#9ca3af",
@@ -1025,9 +1029,9 @@ export default function Expenses() {
                 </div>
                 <div
                   style={{
-                    fontSize: "11px",
+                    fontSize: "15px",
                     color: "#9ca3af",
-                    marginTop: "4px",
+                    marginTop: "12px",
                   }}
                 >
                   خلال {daysDiff} يوم
@@ -1079,14 +1083,14 @@ export default function Expenses() {
             >
               <span
                 style={{
-                  fontSize: "15px",
+                  fontSize: "20px",
                   fontWeight: "700",
                   color: "#1a1f36",
                 }}
               >
                 قائمة النفقات
               </span>
-              <span style={{ fontSize: "13px", color: "#9ca3af" }}>
+              <span style={{ fontSize: "15px", color: "#9ca3af" }}>
                 {expenses.length} معاملة
               </span>
             </div>
@@ -1099,18 +1103,18 @@ export default function Expenses() {
                   color: "#9ca3af",
                 }}
               >
-                <div style={{ fontSize: "14px" }}>جاري التحميل...</div>
+                <div style={{ fontSize: "20px" }}>جاري التحميل...</div>
               </div>
             ) : expenses.length === 0 ? (
               <div style={{ padding: "4rem", textAlign: "center" }}>
                 <MdAttachMoney
                   size={48}
-                  style={{ color: "#d1d5db", marginBottom: "0.75rem" }}
+                  style={{ color: "#d1d5db", textAlign: "center" , marginBottom: "0.75rem" }}
                 />
                 <p
                   style={{
                     color: "#9ca3af",
-                    fontSize: "14px",
+                    fontSize: "20px",
                     margin: "0 0 1rem",
                   }}
                 >
@@ -1125,7 +1129,7 @@ export default function Expenses() {
                     color: "#fff",
                     border: "none",
                     borderRadius: "8px",
-                    fontSize: "13px",
+                    fontSize: "15px",
                     fontWeight: "600",
                     cursor: "pointer",
                     fontFamily: "inherit",
@@ -1145,8 +1149,8 @@ export default function Expenses() {
                           style={{
                             textAlign: i === 3 ? "center" : "right",
                             padding: "11px 16px",
-                            fontSize: "12px",
-                            fontWeight: "600",
+                            fontSize: "18px",
+                            fontWeight: "700",
                             color: "#4b5563",
                             background: "#f1f3f9",
                             borderBottom: "1px solid #e5e7eb",
@@ -1172,7 +1176,7 @@ export default function Expenses() {
                         <td style={{ padding: "12px 16px" }}>
                           <span
                             style={{
-                              fontSize: "13px",
+                              fontSize: "16px",
                               fontWeight: "600",
                               padding: "3px 10px",
                               borderRadius: "8px",
@@ -1186,7 +1190,7 @@ export default function Expenses() {
                         <td
                           style={{
                             padding: "12px 16px",
-                            fontSize: "14px",
+                            fontSize: "18px",
                             fontWeight: "800",
                             color: row.value < 0 ? "#f97316" : "#dc2626",
                           }}
@@ -1196,7 +1200,7 @@ export default function Expenses() {
                         <td
                           style={{
                             padding: "12px 16px",
-                            fontSize: "12px",
+                            fontSize: "16px",
                             color: "#6b7280",
                           }}
                         >
@@ -1260,7 +1264,7 @@ export default function Expenses() {
                       <td
                         style={{
                           padding: "12px 16px",
-                          fontSize: "13px",
+                          fontSize: "16px",
                           fontWeight: "700",
                           color: "#374151",
                         }}
@@ -1270,7 +1274,7 @@ export default function Expenses() {
                       <td
                         style={{
                           padding: "12px 16px",
-                          fontSize: "15px",
+                          fontSize: "18px",
                           fontWeight: "900",
                           color: "#dc2626",
                         }}
@@ -1302,7 +1306,7 @@ export default function Expenses() {
             >
               <span
                 style={{
-                  fontSize: "14px",
+                  fontSize: "17px",
                   fontWeight: "700",
                   color: "#1a1f36",
                 }}
@@ -1317,7 +1321,7 @@ export default function Expenses() {
                   padding: "1.5rem",
                   textAlign: "center",
                   color: "#9ca3af",
-                  fontSize: "13px",
+                  fontSize: "15px",
                 }}
               >
                 لا توجد بيانات
@@ -1353,7 +1357,7 @@ export default function Expenses() {
                       >
                         <span
                           style={{
-                            fontSize: "12px",
+                            fontSize: "16px",
                             fontWeight: "600",
                             color: "#374151",
                             overflow: "hidden",
@@ -1366,7 +1370,7 @@ export default function Expenses() {
                         </span>
                         <span
                           style={{
-                            fontSize: "12px",
+                            fontSize: "18px",
                             fontWeight: "700",
                             color: COLORS[i % COLORS.length],
                             flexShrink: 0,
@@ -1396,7 +1400,7 @@ export default function Expenses() {
                       <div
                         style={{
                           marginTop: "4px",
-                          fontSize: "11px",
+                          fontSize: "16px",
                           color: "#6b7280",
                           textAlign: "left",
                         }}

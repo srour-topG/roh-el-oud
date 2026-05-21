@@ -66,10 +66,10 @@ export function NavbarComponnt() {
               />
             </div>
             <div className="hidden sm:block">
-              <span className="font-bold text-[15px] text-gray-800">
+              <span className="font-bold text-lg text-gray-800">
                 روح العود
               </span>
-              <p className="text-[11px] text-gray-400 m-0">
+              <p className="text-[12px] text-gray-400 m-0">
                 نظام البيع والمخزون
               </p>
             </div>
@@ -97,10 +97,10 @@ export function NavbarComponnt() {
                 onClick={() => setUserMenuOpen((v) => !v)}
                 className="flex items-center gap-2 py-1.5 pr-2 pl-3 border border-gray-200 rounded-lg bg-transparent hover:bg-gray-50 transition-all"
               >
-                <div className="w-7 h-7 rounded-full bg-[#344685] flex items-center justify-center text-xs font-bold text-white">
+                <div className="w-7 h-7 rounded-full bg-[#344685] flex items-center justify-center text-sm font-bold text-white">
                   {username ? username[0].toUpperCase() : "U"}
                 </div>
-                <span className="text-[13px] font-medium text-gray-800 max-w-[90px] truncate hidden sm:inline-block">
+                <span className="text-md font-medium text-gray-800 max-w-[90px] truncate hidden sm:inline-block">
                   {username}
                 </span>
                 <svg
@@ -122,16 +122,16 @@ export function NavbarComponnt() {
               {userMenuOpen && (
                 <div className="absolute top-full mt-2 left-0 w-44 bg-white border border-gray-100 rounded-xl shadow-lg z-50 overflow-hidden">
                   <div className="px-4 py-3 border-b border-gray-50">
-                    <p className="text-[11px] text-gray-400 m-0">
+                    <p className="text-sm text-gray-400 m-0">
                       تسجيل الدخول بـ
                     </p>
-                    <p className="text-[13px] font-semibold text-gray-800 mt-0.5">
+                    <p className="text-md font-semibold text-gray-800 mt-0.5">
                       {username}
                     </p>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="w-full px-4 py-2.5 text-right text-[13px] text-red-500 flex items-center gap-2 hover:bg-red-50 transition-colors"
+                    className="w-full px-4 py-2.5 text-right text-sm text-red-500 flex items-center gap-2 hover:bg-red-50 transition-colors"
                   >
                     <RiLogoutBoxLine size={15} />
                     تسجيل الخروج

@@ -108,7 +108,7 @@ function KpiCard({ title, value, sub, icon, accent, trend, trendUp }) {
             {fmtNum(value)}
             <span className="text-sm font-medium text-gray-400 mr-1">ج.م</span>
           </p>
-          {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+          {sub && <p className="text-sm text-gray-400 mt-2">{sub}</p>}
         </div>
         <div
           className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center ${accent.replace("bg-", "bg-").replace("500", "100")}`}
@@ -138,28 +138,28 @@ function ProfitBreakdown({ summary }) {
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-      <h3 className="text-base font-bold text-gray-800 mb-5">تحليل الأرباح</h3>
+      <h3 className="text-xl font-bold text-gray-800 mb-5">تحليل الأرباح</h3>
       <div className="space-y-4">
         <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-          <span className="text-gray-600">إجمالي المبيعات</span>
-          <span className="font-semibold text-emerald-600">
+          <span className="text-gray-600 text-lg">إجمالي المبيعات</span>
+          <span className="font-bold text-lg text-emerald-600">
             {fmtNum(totalRevenue)} ج.م
           </span>
         </div>
         <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-          <span className="text-gray-600">تكلفة البضائع المباعة</span>
-          <span className="font-semibold text-red-500">{fmtNum(cogs)} ج.م</span>
+          <span className="text-gray-600 text-lg">تكلفة البضائع المباعة</span>
+          <span className="font-bold text-red-500 text-lg">{fmtNum(cogs)} ج.م</span>
         </div>
         <div className="flex justify-between items-center pb-2 border-b border-gray-100">
-          <span className="text-gray-600">المصروفات التشغيلية</span>
-          <span className="font-semibold text-orange-500">
+          <span className="text-gray-600 text-lg">المصروفات التشغيلية</span>
+          <span className="font-bold text-orange-500 text-lg">
             {fmtNum(totalExpenses)} ج.م
           </span>
         </div>
         <div className="flex justify-between items-center pt-3 mt-1 border-t-2 border-gray-200">
-          <span className="text-lg font-bold text-gray-800">صافي الربح</span>
+          <span className="text-lg font-bold text-gray-800 ">صافي الربح</span>
           <div className="text-right">
-            <span className="text-xl font-bold text-blue-600">
+            <span className="text-xl font-extrabold text-blue-600">
               {fmtNum(netProfit)} ج.م
             </span>
             <span className="text-xs text-gray-400 mr-2">
@@ -427,8 +427,8 @@ export default function FinanceDashboard() {
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="max-w-screen-2xl mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">لوحة المالية</h1>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <h1 className="text-2xl font-bold text-gray-900">لوحة المالية</h1>
+            <p className="text-lg text-gray-400 mt-0.5">
               {displayLabel(selectedDate, period)}
             </p>
           </div>
@@ -440,7 +440,7 @@ export default function FinanceDashboard() {
                 <button
                   key={t.key}
                   onClick={() => handlePeriodChange(t.key)}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-1.5 rounded-lg text-lg font-medium transition-all ${
                     period === t.key
                       ? "bg-white text-gray-900 shadow-sm"
                       : "text-gray-500 hover:text-gray-700"
@@ -466,7 +466,7 @@ export default function FinanceDashboard() {
                   setOpenPicker(true);
                   setPickerView(period);
                 }}
-                className="px-3 py-1.5 rounded-xl bg-white shadow text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+                className="px-3 py-1.5 rounded-xl bg-white shadow text-lg font-semibold text-gray-700 hover:bg-gray-50 transition"
               >
                 {displayLabel(selectedDate, period)}
               </button>
@@ -484,7 +484,7 @@ export default function FinanceDashboard() {
               {/* Today */}
               <button
                 onClick={() => setSelectedDate(new Date())}
-                className="ml-2 px-3 py-1.5 text-xs rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition"
+                className="ml-2 px-3 py-1.5 text-sm rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition"
               >
                 اليوم
               </button>

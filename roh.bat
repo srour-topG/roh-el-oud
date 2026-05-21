@@ -6,11 +6,11 @@ echo Starting backend with PM2 (silent)...
 cd /d "%~dp0backend"
 
 :: Start only if not already running
-pm2 describe roh-el-oud >NUL 2>&1
+pm2 describe roh-system >NUL 2>&1
 if errorlevel 1 (
-    pm2 start server.js --name roh-el-oud >NUL 2>&1
+    pm2 start server.js --name roh-system >NUL 2>&1
 ) else (
-    pm2 restart roh-el-oud >NUL 2>&1
+    pm2 restart roh-system >NUL 2>&1
 )
 
 :: Wait until server becomes available

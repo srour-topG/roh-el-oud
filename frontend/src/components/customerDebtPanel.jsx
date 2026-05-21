@@ -21,7 +21,7 @@ export function CustomerDebtPanel({ customerID }) {
     axios
       .get(`${apiUrl}/debts/customer/${customerID}`)
       .then((r) => {
-        console.log(r);
+        // console.log(r);
         setDebts(r.data.debts);
         setTotal(r.data.totalRemaining);
       })

@@ -19,7 +19,7 @@ async function login(data) {
       withCredentials: true,
     });
     localStorage.setItem("username", response.data.userInfo.name);
-    console.log(response);
+    // console.log(response);
     return response;
   } catch (error) {
     console.error("Register error:", error);
